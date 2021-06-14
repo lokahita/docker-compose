@@ -49,3 +49,11 @@ services:
       - "CONNECTION_PORT=5432"
       - "CONNECTION_USER=postgres"
       - "CONNECTION_PASSWORD=postgre5"
+
+  proxyhub:
+    container_name: cors-anywhere
+    image: sourabh385/cors-anywhere
+    restart: always
+    ports:
+      - 8003:5000
+    
