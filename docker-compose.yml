@@ -1,0 +1,51 @@
+version: "3" 
+services:
+  db:
+    container_name: postgis
+    image: postgis/postgis
+    restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: postgre5
+
+  httpd_proxy:
+    container_name: httpd_cifor
+    image: httpd:latest
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - /home/ftageoportal/geoportal_fta/htdocs:/usr/local/apache2/htdocs/
+      - /home/ftageoportal/geoportal_fta/conf:/usr/local/apache2/conf
+      
+  pycsw_docker:
+    container_name: pycsw_docker
+    image: geopython/pycsw:latest
+    restart: always
+    ports: 
+      - "8001:8000"
+    links: 
+      - db
+    depends_on:
+      - db
+    volumes:
+      - /home/ftageoportal/geoportal_fta/docker-compose/etc/pycsw:/etc/pycsw
+      
+  api:
+    container_name: cifor_api
+    image: emhayusa/cifor-api
+    restart: always
+    ports: 
+      - "8002:5000"
+    links: 
+      - db
+    depends_on:
+      - db
+    volumes:
+      - /home/ftageoportal/geoportal_fta/api/app/:/opt/code/app
+    environment:
+      - "CONNECTION_SERVER=db"
+      - "CONNECTION_PORT=5432"
+      - "CONNECTION_USER=postgres"
+      - "CONNECTION_PASSWORD=postgre5"
