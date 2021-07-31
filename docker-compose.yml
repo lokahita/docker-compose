@@ -21,7 +21,7 @@ services:
       
   pycsw_docker:
     container_name: pycsw_docker
-    image: geopython/pycsw:latest
+    image: geopython/pycsw:2.6.0
     restart: always
     ports: 
       - "8001:8000"
@@ -31,6 +31,19 @@ services:
       - db
     volumes:
       - /home/ftageoportal/geoportal_fta/docker-compose/etc/pycsw:/etc/pycsw
+  
+  pycsw_docker_internal:
+    container_name: pycsw_docker_internal
+    image: geopython/pycsw:2.6.0
+    restart: always
+    ports:
+      - "8003:8000"
+    links:
+      - db
+    depends_on:
+      - db
+    volumes:
+      - /home/ftageoportal/geoportal_fta/docker-compose/etc2/pycsw:/etc/pycsw
       
   api:
     container_name: cifor_api
@@ -50,12 +63,12 @@ services:
       - "CONNECTION_USER=postgres"
       - "CONNECTION_PASSWORD=postgre5"
 
-  proxyhub:
-    container_name: cors-anywhere
-    image: sourabh385/cors-anywhere
-    restart: always
-    ports:
-      - 8003:5000
+  #proxyhub:
+  #  container_name: cors-anywhere
+  #  image: sourabh385/cors-anywhere
+  #  restart: always
+  #  ports:
+  #    - 8003:5000
 
   php:
     container_name: apache_php
@@ -65,3 +78,26 @@ services:
       - 8004:80
     volumes:
       - /home/ftageoportal/geoportal_fta/php:/var/www/html/
+
+  geoserver:
+    container_name: cifor_geoserver
+    image: kartoza/geoserver:2.19.1
+    #volumes:
+    #  - /home/ftageoportal/geoportal_fta/geoserver/data_dir:/opt/geoserver/data_dir
+    ports:
+      - 8600:8080
+    restart: always
+    environment:
+      - GEOSERVER_DATA_DIR=/opt/geoserver/data_dir
+      - GEOWEBCACHE_CACHE_DIR=/opt/geoserver/data_dir/gwc
+      - GEOSERVER_ADMIN_PASSWORD=myawesomegeoserver
+      - GEOSERVER_ADMIN_USER=admin
+      - INITIAL_MEMORY=2G
+      - MAXIMUM_MEMORY=4G
+    depends_on:
+      - db
+    #healthcheck:
+    #    test: curl --fail -s http://localhost:8080/ || exit 1
+    #    interval: 1m30s
+    #    timeout: 10s
+    #    retries: 3
